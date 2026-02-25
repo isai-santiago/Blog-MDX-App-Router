@@ -1,0 +1,150 @@
+---
+title: "Guía Definitiva de TypeScript: De Junior a Arquitecto"
+description: "Descubre por qué TypeScript es el estándar de la industria. Aprende desde tipado básico hasta genéricos avanzados, utility types y validación con Zod."
+date: "2024-01-20"
+category: "typescript"
+tags: ["typescript", "javascript", "tipado", "zod", "backend"]
+author:
+  name: "Ana Types"
+  avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+  bio: "Tech Lead at Indaptados"
+featured: false
+published: true
+coverImage: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=1000"
+---
+
+# Dominando TypeScript en Producción
+
+Escribir código en JavaScript puro (Vanilla JS) en un proyecto de gran escala es como caminar por la cuerda floja sin red de seguridad. Modificas la propiedad de un objeto en el archivo A, y silenciosamente rompes la interfaz en el archivo B. 
+
+**TypeScript** resuelve esto implementando un sistema de tipado estático estructural sobre JavaScript. No es solo un linter glorificado; es una herramienta de arquitectura de software.
+
+<Callout type="warning" title="El Mito del Tiempo">
+"TypeScript me hace programar más lento porque tengo que escribir más código". Esto es falso. Escribir los tipos toma 5 segundos; rastrear un error de 'undefined is not a function' en producción toma horas.
+</Callout>
+
+## 1. El Eterno Debate: Interfaces vs Types
+
+En TypeScript, puedes definir la forma de un objeto de dos maneras: `interface` o `type`. Aunque a menudo son intercambiables, tienen propósitos ligeramente distintos.
+
+### Interfaces
+Las interfaces son ideales para definir la estructura de objetos, especialmente cuando trabajas con programación orientada a objetos (clases) o cuando estás construyendo librerías que otros extenderán.
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  isActive: boolean;
+}
+
+// Las interfaces pueden ser "extendidas" (herencia)
+interface AdminUser extends User {
+  adminLevel: number;
+  permissions: string[];
+}
+```
+
+### Types (Type Aliases)
+Los `type` son mucho más poderosos y versátiles. Pueden representar primitivos, uniones de strings, tuplas y tipos calculados complejos.
+
+```typescript
+// Tipos primitivos y uniones literales (Imposible con interfaces)
+type ID = string | number;
+type ThemeMode = 'dark' | 'light' | 'system';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+// Objeto definido como type
+type Product = {
+  sku: string;
+  price: number;
+};
+```
+
+**Regla de Oro:** Usa `interface` para definir modelos de datos y props de componentes React. Usa `type` para funciones, uniones, y transformaciones de tipos avanzadas.
+
+## 2. Genéricos (Generics): El Poder de la Reusabilidad
+
+Los genéricos son como "variables para tipos". Te permiten crear componentes o funciones que pueden procesar múltiples tipos de datos manteniendo la seguridad del compilador.
+
+Imagina que quieres escribir una función para obtener datos de una API. Sin genéricos, tendrías que usar `any` y perderías toda la ayuda del autocompletado:
+
+```typescript
+// 'T' es el Genérico (Type) que pasaremos al ejecutar la función
+async function fetchApi<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Error en red');
+  
+  const data = await response.json();
+  return data as T;
+}
+
+// Uso en la vida real
+interface Comment {
+  id: number;
+  body: string;
+}
+
+// TypeScript ahora sabe perfectamente que 'comments' es un Array de 'Comment'
+const comments = await fetchApi<Comment[]>('/api/comments');
+console.log(comments[0].body); // ¡Autocompletado perfecto!
+```
+
+## 3. Tipos Utilitarios (Utility Types)
+
+TypeScript incluye utilidades mágicas que te ahorran escribir código redundante.
+
+### Pick y Omit
+Útiles cuando quieres crear versiones reducidas de un modelo de base de datos.
+
+```typescript
+interface DatabaseUser {
+  id: string;
+  email: string;
+  passwordHash: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Omitimos información sensible para enviar al Frontend
+type PublicProfile = Omit<DatabaseUser, 'passwordHash' | 'updatedAt'>;
+
+// Seleccionamos solo lo necesario para el login
+type LoginCredentials = Pick<DatabaseUser, 'email' | 'passwordHash'>;
+```
+
+## 4. Validación en Tiempo de Ejecución (Runtime Validation)
+
+Este es el concepto más importante que muchos desarrolladores ignoran. **TypeScript desaparece al compilar**. 
+
+Si le dices a TypeScript que una API devolverá un número, pero la API devuelve un string, TypeScript no detendrá la ejecución del código en el navegador del usuario. Tu aplicación explotará.
+
+Para solucionar esto, usamos herramientas como **Zod** para validar los datos *en tiempo de ejecución* y generar los tipos de TypeScript automáticamente a partir de esa validación.
+
+```typescript
+import { z } from 'zod';
+
+// 1. Definimos el ESQUEMA de validación
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string().min(3).max(20),
+  age: z.number().int().positive().optional()
+});
+
+// 2. Extraemos el TIPO de TypeScript automáticamente (¡Sin repetir código!)
+type User = z.infer<typeof UserSchema>;
+
+// 3. Validamos la data real que llega del servidor
+// (Imagina que rawData viene de un fetch)
+const result = UserSchema.safeParse(rawData);
+
+if (!result.success) {
+  console.error("Los datos de la API son inválidos:", result.error);
+} else {
+  // result.data ahora está 100% tipado y garantizado
+  console.log(result.data.username); 
+}
+```
+
+## Conclusión
+
+Migrar a TypeScript puede sentirse como un freno inicial, pero a largo plazo, es el acelerador más grande para cualquier equipo de desarrollo. Protege tu código de ti mismo y de los cambios inesperados en el futuro.

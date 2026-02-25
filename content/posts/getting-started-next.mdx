@@ -1,0 +1,132 @@
+---
+title: "Next.js 14 Complete Guide: App Router & Server Components"
+description: "Master modern web development. An in-depth guide to building full-stack applications with Next.js 14, Server Actions, and the new App Router."
+date: "2024-01-15"
+category: "nextjs"
+tags: ["nextjs", "react", "typescript", "fullstack", "ssr"]
+author:
+  name: "María González"
+  avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+  bio: "Frontend Developer at Indaptados"
+featured: true
+published: true
+coverImage: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000"
+seo:
+  title: "Next.js 14 Complete Guide - From Zero to Production"
+  description: "Master Next.js 14 with App Router, Server Components, and modern best practices."
+  keywords: ["nextjs 14", "app router", "server components", "react", "typescript"]
+---
+
+# Building the Future with Next.js 14
+
+Next.js has fundamentally transformed how we build React applications. By shifting the rendering paradigm back to the server while maintaining the interactivity of client-side React, Next.js 14 offers the best of both worlds.
+
+In this deep dive, we will explore the architecture of the **App Router**, the power of **Server Components**, and how to handle data fetching in this new era.
+
+<Callout type="success" title="Production Ready">
+The App Router is no longer experimental. It is the recommended way to build new Next.js applications, offering superior performance, nested layouts, and simplified data fetching.
+</Callout>
+
+## The Paradigm Shift: Server Components
+
+Traditionally, React applications sent massive JavaScript bundles to the browser. The browser had to download, parse, and execute this code before the user could see or interact with anything.
+
+**React Server Components (RSC)** flip this model on its head.
+
+By default, every component inside the `app/` directory is a Server Component. They render exclusively on the server and send pure, lightweight HTML to the client. The JavaScript code for these components *never* reaches the browser.
+
+### Benefits of Server Components
+1. **Zero Bundle Size:** Large dependencies (like markdown parsers or date formatting libraries) stay on the server.
+2. **Direct Backend Access:** You can query your database directly from your component without needing an intermediate API route.
+3. **Enhanced Security:** API keys and sensitive tokens never leak to the client.
+
+```tsx
+// app/blog/page.tsx
+// This component runs ONLY on the server
+
+import { db } from '@/lib/db';
+import { PostCard } from '@/components/PostCard';
+
+export default async function BlogArchive() {
+  // Direct database query! No fetch() to an API needed.
+  const posts = await db.post.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {posts.map(post => (
+        <PostCard key={post.id} data={post} />
+      ))}
+    </div>
+  );
+}
+```
+
+## When to use Client Components
+
+Server Components are amazing, but they have limitations: they cannot use React state (`useState`), effects (`useEffect`), or handle browser events (`onClick`, `onChange`).
+
+When you need interactivity, you explicitly declare a component as a Client Component using the `'use client'` directive at the very top of the file.
+
+<Callout type="info" title="The Interleaved Approach">
+You should push the `'use client'` directive as far down the component tree as possible. Keep your layouts and pages as Server Components, and only make specific interactive buttons or forms Client Components.
+</Callout>
+
+```tsx
+// components/LikeButton.tsx
+'use client'; // This tells Next.js to send this JS to the browser
+
+import { useState } from 'react';
+
+export function LikeButton({ initialLikes }: { initialLikes: number }) {
+  const [likes, setLikes] = useState(initialLikes);
+
+  return (
+    <button 
+      onClick={() => setLikes(likes + 1)}
+      className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded"
+    >
+      ❤️ {likes} Likes
+    </button>
+  );
+}
+```
+
+## Data Mutations: Server Actions
+
+Before Next.js 14, if you wanted to submit a form to update a database, you had to setup states, endpoints, and fetch calls. **Server Actions** eliminate all that boilerplate. You can now define a server function and pass it directly to the `action` attribute of a standard HTML form.
+
+```tsx
+// app/posts/new/page.tsx
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/db';
+
+export default function NewPostPage() {
+  
+  // This function executes securely on the server
+  async function createPost(formData: FormData) {
+    'use server'; // Server Action directive
+    
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    
+    await db.post.create({ data: { title, content } });
+    
+    // Automatically clear the cache and update the UI!
+    revalidatePath('/posts');
+  }
+
+  return (
+    <form action={createPost} className="flex flex-col gap-4">
+      <input type="text" name="title" placeholder="Post Title" required />
+      <textarea name="content" placeholder="Content..." required />
+      <button type="submit" className="bg-purple-600">Publish Post</button>
+    </form>
+  );
+}
+```
+
+## Conclusion
+
+Next.js 14 is not just a framework update; it's a completely new way of architecting web applications. By mastering the balance between Server and Client components, you can build applications that are incredibly fast for users and remarkably enjoyable for developers to maintain.

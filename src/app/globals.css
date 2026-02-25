@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Colores para modo claro */
+    --background: #ffffff;
+    --foreground: #0f172a;
+  }
+
+  .dark {
+    /* Colores para modo oscuro (Cyberpunk) */
+    --background: #050505;
+    --foreground: #e2e8f0;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased min-h-screen;
+    /* Suaviza la transición de colores al cambiar el tema */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer utilities {
+  /* Los efectos neón ahora solo brillan con intensidad en modo oscuro */
+  .text-glow-cyan {
+    @apply dark:drop-shadow-[0_0_10px_rgba(6,182,212,0.7)];
+    text-shadow: 0 0 5px rgba(6,182,212,0.2);
+  }
+  
+  .dark .text-glow-cyan {
+    text-shadow: 0 0 10px rgba(6,182,212,0.7), 0 0 20px rgba(6,182,212,0.5);
+  }
+
+  .text-glow-purple {
+    @apply dark:drop-shadow-[0_0_10px_rgba(168,85,247,0.7)];
+    text-shadow: 0 0 5px rgba(168,85,247,0.2);
+  }
+
+  .dark .text-glow-purple {
+    text-shadow: 0 0 10px rgba(168,85,247,0.7), 0 0 20px rgba(168,85,247,0.5);
+  }
+}

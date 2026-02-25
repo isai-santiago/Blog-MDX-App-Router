@@ -1,0 +1,76 @@
+---
+title: "Guía Definitiva de Despliegue Moderno: De Local a Producción"
+description: "Aprende a llevar tus aplicaciones web a producción. Exploramos estrategias con Docker, y plataformas Edge como Netlify y Cloudflare Pages."
+date: "2024-02-20"
+category: "devops"
+tags: ["deployment", "docker", "netlify", "cloudflare", "github"]
+author:
+  name: "anonymus"
+  avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+  bio: "Lead Developer"
+featured: true
+published: true
+coverImage: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=1000"
+---
+
+# Desplegando Aplicaciones Web en Producción
+
+Llevar una aplicación de `localhost:3000` a un entorno de producción seguro, rápido y escalable es uno de los hitos más importantes en cualquier proyecto. Hoy en día, no necesitas configurar servidores Linux desde cero a menos que realmente lo desees.
+
+<Callout type="info" title="Evolución del Hosting">
+El ecosistema ha evolucionado hacia arquitecturas Serverless y Edge. Esto significa que tu código se ejecuta lo más cerca posible del usuario final, reduciendo la latencia a milisegundos.
+</Callout>
+
+## Opciones de Despliegue Modernas
+
+Si tu stack incluye HTML, CSS, JavaScript (y frameworks como React o Next.js), tienes excelentes opciones gratuitas y de grado empresarial que se conectan directamente a tu control de versiones en GitHub.
+
+### 1. Cloudflare Pages
+Cloudflare Pages se ha convertido en una bestia para el despliegue de sitios estáticos y aplicaciones full-stack (gracias a sus funciones Edge). 
+
+Su mayor ventaja es la red global de Cloudflare. Cuando despliegas aquí, tu sitio se cachea instantáneamente en cientos de servidores alrededor del mundo.
+
+**Pasos para desplegar en Cloudflare Pages:**
+1. Conecta tu cuenta de GitHub.
+2. Selecciona el repositorio de tu proyecto.
+3. Configura el comando de build (por ejemplo, `npm run build`).
+4. Define el directorio de salida (usualmente `dist` o `out`).
+
+### 2. Netlify
+Netlify es el pionero del movimiento Jamstack. Su experiencia de desarrollador (DX) es legendaria. Es ideal para proyectos donde necesitas integraciones rápidas, formularios sin backend, o funciones serverless sencillas.
+
+<Callout type="success" title="Tip de Rendimiento">
+Netlify maneja automáticamente la invalidación de caché cada vez que haces un git push a tu rama principal (main/master).
+</Callout>
+
+## El Enfoque Tradicional: Docker
+
+Si estás construyendo una API pesada o necesitas control absoluto del entorno de ejecución, Dockerizar tu aplicación es el camino a seguir.
+
+Aquí tienes un `Dockerfile` multi-stage optimizado para aplicaciones Node.js. Este enfoque reduce el tamaño final de la imagen al no incluir las dependencias de desarrollo.
+
+```dockerfile
+# Stage 1: Dependencias
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+# Stage 2: Construcción
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+# Stage 3: Producción
+FROM node:18-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json ./
+
+EXPOSE 3000
+CMD ["npm", "start"]
