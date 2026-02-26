@@ -7,6 +7,7 @@
 
 Este proyecto es una plataforma de blogging de alto rendimiento diseñada con las últimas tecnologías de desarrollo web. Utiliza **Next.js App Router** para una navegación ultrarrápida, **MDX** para una gestión de contenido flexible y **Tailwind CSS** para un diseño moderno y minimalista, enlace de la pagina: https://blog-mdx-app-router-plnt.vercel.app/blog
 
+# hay una disculpa la presentacion la dejare pendiente por que hay mucho ruido en mi casa
 ---
 
 ## 📖 Tabla de Contenidos
