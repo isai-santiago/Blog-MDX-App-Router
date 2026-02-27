@@ -107,7 +107,7 @@ Cada artículo se define mediante un archivo `.mdx` en la carpeta `/content/`. E
 title: "Cómo construir un blog con Next.js"
 date: "2026-02-26"
 description: "Guía paso a paso para dominar MDX y el App Router."
-author: "Zeryux"
+author: "Isai"
 tags: ["Next.js", "Tutorial"]
 image: "/images/blog/portada.jpg"
 ---
