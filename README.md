@@ -24,7 +24,7 @@ Este proyecto es una plataforma de blogging de alto rendimiento diseñada con la
 
 ## ✨ Características Principales
 
-### 🚀 Rendimiento y Core Web Vitals
+### 🚀 Rendimiento y Core Web 
 - **Generación Estática (SSG):** Todos los artículos se pre-renderizan en el servidor, garantizando tiempos de carga casi instantáneos.
 - **Optimización de Imágenes:** Implementación de `next/image` con soporte para WebP y lazy loading.
 - **Incremental Static Regeneration (ISR):** Capacidad de actualizar contenido sin necesidad de reconstruir todo el sitio.
